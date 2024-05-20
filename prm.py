@@ -1,21 +1,5 @@
-import math
-import random
 from typing import List, Tuple
-import heapq
-
-class Node:
-    def __init__(self, x: float, y: float):
-        self.x = x
-        self.y = y
-        self.neighbors: List[Node] = []
-
-def distance(node1: Node, node2: Node) -> float:
-    return math.sqrt((node1.x - node2.x)**2 + (node1.y - node2.y)**2)
-
-def generate_random_node(width: float, height: float) -> Node:
-    x = random.uniform(0, width)
-    y = random.uniform(0, height)
-    return Node(x, y)
+from utils import *
 
 def is_collision(node1: Node, node2: Node, obstacles: List[Tuple[float, float, float, float]]) -> bool:
     for obstacle in obstacles:
@@ -67,7 +51,7 @@ def line_intersects_segment(x1: float, y1: float, x2: float, y2: float, x3: floa
         return True
     return False
 
-def generate_prm_max_connect(num_nodes: int, width: float, height: float, max_connections: int, obstacles: List[Tuple[float, float, float, float]]) -> List[Node]:
+def generate_prm(num_nodes: int, width: float, height: float, max_connections: int, obstacles: List[Tuple[float, float, float, float]]) -> List[Node]:
     nodes: List[Node] = []
     for _ in range(num_nodes):
         node = generate_random_node(width, height)
@@ -89,53 +73,3 @@ def generate_prm_max_connect(num_nodes: int, width: float, height: float, max_co
     nodes = [node for node in nodes if node.neighbors]
 
     return nodes
-
-def closest_node(nodes: List[Node], x: float, y: float) -> Node:
-    closest = None
-    min_distance = float('inf')
-    for node in nodes:
-        d = distance(node, Node(x, y))
-        if d < min_distance:
-            min_distance = d
-            closest = node
-    return closest
-
-def dijkstra(start_node: Node, end_node: Node, nodes: List[Node]) -> List[Node]:
-    # Initialize distances and previous nodes
-    distances = {node: float('inf') for node in nodes}
-    distances[start_node] = 0
-    previous = {node: None for node in nodes}
-
-    # Create a priority queue to store nodes with their distances
-    queue = [(0, start_node)]
-
-    while queue:
-        # Get the node with the smallest distance from the queue
-        current_distance, current_node = heapq.heappop(queue)
-
-        # If the current node is the end node, we have found the shortest path
-        if current_node == end_node:
-            break
-
-        # Check the neighbors of the current node
-        for neighbor in current_node.neighbors:
-            # Calculate the distance from the start node to the neighbor
-            next_distance = current_distance + distance(current_node, neighbor)
-
-            # If the new distance is smaller than the current distance, update it
-            if next_distance < distances[neighbor]:
-                distances[neighbor] = next_distance
-                previous[neighbor] = current_node
-
-                # Add the neighbor to the queue with its new distance
-                heapq.heappush(queue, (next_distance, neighbor))
-
-    # Reconstruct the shortest path from the end node to the start node
-    path = []
-    current = end_node
-    while current:
-        path.append(current)
-        current = previous[current]
-    path.reverse()
-
-    return path
